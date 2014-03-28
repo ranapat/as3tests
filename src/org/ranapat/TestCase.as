@@ -11,7 +11,7 @@ package org.ranapat {
 		private var running:Boolean;
 		private var destroyed:Boolean;
 		
-		protected var lazyAssert:Boolean;
+		protected var manualMode:Boolean;
 		
 		public var result:TestCaseResult;
 		
@@ -64,6 +64,22 @@ package org.ranapat {
 			}
 		}
 		
+		protected function assertSet(a:*, message:String):void {
+			if (a) {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
+			} else {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
+			}
+		}
+		
+		protected function assertNotSet(a:*, message:String):void {
+			if (!a) {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
+			} else {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
+			}
+		}
+		
 		protected function assertTrue(a:*, message:String):void {
 			this.assert(a, true, message);
 		}
@@ -85,6 +101,13 @@ package org.ranapat {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
 			} else {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
+			}
+		}
+		
+		protected function nextTest():void {
+			if (this.manualMode) {
+				this.manualMode = false;
+				this.next();
 			}
 		}
 		
@@ -135,7 +158,7 @@ package org.ranapat {
 				++this.index;
 				
 				this.running = true;
-				this.lazyAssert = false;
+				this.manualMode = false;
 				
 				try {
 					this.current.apply(this);
@@ -143,7 +166,7 @@ package org.ranapat {
 					this.handle(e);
 				}
 				
-				if (!this.lazyAssert) {
+				if (!this.manualMode) {
 					this.next();
 				}
 			} else if (!this.destroyed) {
@@ -168,10 +191,6 @@ package org.ranapat {
 		
 		private function handle(result:Error):void {
 			this.result.apped(result, this.getFunctionName(this.current));
-			
-			if (this.lazyAssert) {
-				this.next();
-			}
 		}
 		
 		private function next():void {
