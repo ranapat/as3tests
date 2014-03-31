@@ -6,6 +6,8 @@ package org.ranapat {
 		private var complete:Vector.<TestCaseResult>;
 		private var current:TestCase;
 		
+		private var sharedObjects:Dictionary;
+		
 		private var _total:uint;
 		private var _passed:uint;
 		private var _failed:uint;
@@ -14,6 +16,8 @@ package org.ranapat {
 		public function TestRunner() {
 			this.todo = new Vector.<Class>();
 			this.complete = new Vector.<TestCaseResult>();
+			
+			this.sharedObjects = new Dictionary(true);
 		}
 		
 		public function get total():uint {
@@ -32,6 +36,19 @@ package org.ranapat {
 			return this._errors;
 		}
 		
+		public function share(key:String, object:*):void {
+			this.sharedObjects[object] = key;
+		}
+		
+		public function shared(key:String):* {
+			for (var i:* in this.sharedObjects) {
+				if (this.sharedObjects[i] == key) {
+					return i;
+				}
+			}
+			return null;
+		}
+		
 		public function push(_class:Class):void {
 			this.todo.push(_class);
 		}
@@ -45,6 +62,7 @@ package org.ranapat {
 				
 				_instance.addEventListener(TestCaseCompleteEvent.COMPLETE, this.handleTestCaseComplete, false, 0, true);
 				
+				_instance.runner = this;
 				_instance.run();
 			} else {
 				this.finalize();

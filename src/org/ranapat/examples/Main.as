@@ -17,6 +17,9 @@ package org.ranapat.examples {
 			// entry point
 			
 			testRunner = new TestRunner();
+			
+			testRunner.share("stage", stage);
+			
 			testRunner.push(ExampleTest);
 			testRunner.push(ExampleTest1);
 			testRunner.run();

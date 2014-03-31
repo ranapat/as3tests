@@ -1,12 +1,20 @@
 package org.ranapat {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.TimerEvent;
 	import flash.utils.describeType;
+	import flash.utils.Timer;
 	
 	public class TestCase extends EventDispatcher {
 		private var tests:Vector.<Function>;
 		private var index:uint;
 		private var current:Function;
+		
+		private var _runner:TestRunner;
+		
+		private var _waiter:Timer;
+		private var _waiterCallback:Function;
+		private var _cancelWaiterOnAssert:Boolean;
 		
 		private var running:Boolean;
 		private var destroyed:Boolean;
@@ -17,6 +25,10 @@ package org.ranapat {
 		
 		public function TestCase() {
 			//
+		}
+		
+		public function set runner(runner:TestRunner):void {
+			this._runner = runner;
 		}
 		
 		public function run():void {
@@ -39,22 +51,32 @@ package org.ranapat {
 		}
 		
 		protected function assert(a:*, b:*, message:String = ""):void {
+			this.beforeAssert();
+			
 			if (a == b) {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
 			} else {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
 			}
+			
+			this.afterAssert();
 		}
 		
 		protected function assertStrict(a:*, b:*, message:String = ""):void {
+			this.beforeAssert();
+			
 			if (a === b) {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
 			} else {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
 			}
+			
+			this.afterAssert();
 		}
 		
 		protected function assertThrows(callback:Function, message:String = ""):void {
+			this.beforeAssert();
+			
 			try {
 				callback.apply(this);
 				
@@ -62,22 +84,56 @@ package org.ranapat {
 			} catch (e:Error) {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(e.message)));
 			}
+			
+			this.afterAssert();
 		}
 		
 		protected function assertSet(a:*, message:String):void {
+			this.beforeAssert();
+			
 			if (a) {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
 			} else {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
 			}
+			
+			this.afterAssert();
 		}
 		
 		protected function assertNotSet(a:*, message:String):void {
+			this.beforeAssert();
+			
 			if (!a) {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
 			} else {
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
 			}
+			
+			this.afterAssert();
+		}
+		
+		protected function assertNot(a:*, b:*, message:String = ""):void {
+			this.beforeAssert();
+			
+			if (a != b) {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
+			} else {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
+			}
+			
+			this.afterAssert();
+		}
+		
+		protected function assertNotStrict(a:*, b:*, message:String = ""):void {
+			this.beforeAssert();
+			
+			if (a !== b) {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
+			} else {
+				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
+			}
+			
+			this.afterAssert();
 		}
 		
 		protected function assertTrue(a:*, message:String):void {
@@ -88,20 +144,23 @@ package org.ranapat {
 			this.assert(a, false, message);
 		}
 		
-		protected function assertNot(a:*, b:*, message:String = ""):void {
-			if (a != b) {
-				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
-			} else {
-				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
-			}
+		protected function pass(message:String):void {
+			this.assert(true, true, message);
 		}
 		
-		protected function assertNotStrict(a:*, b:*, message:String = ""):void {
-			if (a !== b) {
-				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(message)));
-			} else {
-				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
-			}
+		protected function fail(message:String):void {
+			this.assert(true, false, message);
+		}
+		
+		protected function wait(delay:Number, callback:Function, cancelOnAssert:Boolean = true):void {
+			this.clearWaiter();
+			
+			this._waiterCallback = callback;
+			this._cancelWaiterOnAssert = cancelOnAssert;
+			
+			this._waiter = new Timer(delay, 1);
+			this._waiter.addEventListener(TimerEvent.TIMER, this.handleWaiterComplete, false, 0, true);
+			this._waiter.start();
 		}
 		
 		protected function nextTest():void {
@@ -109,6 +168,10 @@ package org.ranapat {
 				this.manualMode = false;
 				this.next();
 			}
+		}
+		
+		protected function shared(key:String):* {
+			return this._runner? this._runner.shared(key) : null;
 		}
 		
 		private function initializeEventListeners():void {
@@ -142,6 +205,31 @@ package org.ranapat {
 			this.result = new TestCaseResult(className.toString());
 		}
 		
+		private function beforeAssert():void {
+			this.checkWaiter();
+		}
+		
+		private function afterAssert():void {
+			//
+		}
+		
+		private function checkWaiter():void {
+			if (this._waiter && this._cancelWaiterOnAssert) {
+				this.clearWaiter();
+			}
+		}
+		
+		private function clearWaiter():void {
+			if (this._waiter) {
+				this._waiter.stop();
+				this._waiter.removeEventListener(TimerEvent.TIMER, this.handleWaiterComplete);
+			}
+			
+			this._waiter = null;
+			this._waiterCallback = null;
+			this._cancelWaiterOnAssert = true;
+		}
+		
 		private function sortFunctionNames(a:String, b:String):int {
 			if (a > b) {
 				return 1;
@@ -158,8 +246,6 @@ package org.ranapat {
 				++this.index;
 				
 				this.running = true;
-				this.manualMode = false;
-				
 				try {
 					this.current.apply(this);
 				} catch (e:Error) {
@@ -194,13 +280,24 @@ package org.ranapat {
 		}
 		
 		private function next():void {
+			this.clearWaiter();
+			
 			this.running = false;
+			this.manualMode = false;
 			this.current = null;
 			this.process();
 		}
 		
 		private function handleTestComplete(e:TestCompleteEvent):void {
 			this.handle(e.result);
+		}
+		
+		private function handleWaiterComplete(e:TimerEvent):void {
+			if (this._waiterCallback) {
+				this._waiterCallback.apply(this);
+				
+				this.clearWaiter();
+			}
 		}
 		
 	}

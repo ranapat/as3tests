@@ -1,80 +1,97 @@
 package org.ranapat.examples {
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
+	import flash.display.Sprite;
+	import flash.display.Stage;
+	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
+	import flash.geom.Point;
+	import flash.text.TextField;
 	import flash.utils.Timer;
 	import org.ranapat.TestCase;
+	import org.ranapat.Tools;
 	
 	public class ExampleTest1 extends TestCase {
+		private var stage:Stage;
+		private var text:TextField;
+		
 		
 		public function ExampleTest1() {
 			super();
 			
 		}
 		
-		public function test1():void {
-			//trace("1");
-			this.assertTrue(true, "this is always true");
-		}
-		
-		public function test2():void {
-			//trace("2");
-			this.assertTrue(false, "this is always false");
-		}
-		
-		public function test3():void {
-			//trace("3");
-			throw new Error("Accident exception");
-		}
-		
-		public function test4():void {
-			//trace("4");
-			this.assertThrows(this.throwExcaption, "It shall throw exception");
-		}
-		private function throwExcaption():void {
-			//throw new Error("Throw exception on purpose");
-		}
-		
-		public function test5():void {
-			//trace("5");
-			var a:Object = new Object();
-			var b:Object = a;
+		override protected function initialize():void {
+			this.stage = this.shared("stage");
 			
-			this.assertStrict(a, b, "They shall be the same");
-		}
-
-		private var timer:Timer;
-		public function test6():void {
-			//trace("6");
-			timer = new Timer(1000 * 1, 1);
-			timer.addEventListener(TimerEvent.TIMER, this.handleTimer, false, 0, true);
-			timer.start();
-		}
-		private function handleTimer(e:TimerEvent):void {
-			//trace("(6/7).1");
-			timer.removeEventListener(TimerEvent.TIMER, this.handleTimer);
-			this.assertTrue(true, "lazy timer is complete")
+			/*
+			var sprite:Sprite = new Sprite();
+			sprite.graphics.beginFill(0xff00ff);
+			sprite.graphics.drawRect(0, 0, 100, 100);
+			sprite.graphics.endFill();
+			sprite.x = 80;
+			sprite.y = 80;
+			sprite.addEventListener(MouseEvent.CLICK, function (e:MouseEvent):void {
+				trace("click on the sprite");
+			}, false, 0, true);
+			this.stage.addChild(sprite);
+			*/
+			
+			var container:Sprite = new Sprite();
+			container.x = 70;
+			container.y = 70;
+			container.mouseEnabled = true;
+			container.mouseChildren = true;
+			var anothercontainer:Sprite = new Sprite();
+			container.addChild(anothercontainer);
+			var anothertext:TextField = new TextField();
+			anothertext.text = "anothertext";
+			anothertext.height = 20;
+			anothertext.x = 30;
+			anothertext.y = 30;
+			//anothertext.mouseEnabled = false;
+			anothertext.addEventListener(MouseEvent.CLICK, function (e:MouseEvent):void {
+				trace("click on the anothertext");
+			}, false, 0, true);
+			anothercontainer.addChild(anothertext);
+			this.stage.addChild(container);
+			
+			this.text = new TextField();
+			this.text.text = "This is some text";
+			this.text.height = 20;
+			this.text.x = 120;
+			this.text.y = 100;
+			this.text.mouseEnabled = true;
+			this.stage.addChild(this.text);
 		}
 		
-		public function test7():void {
-			//trace("7");
-			timer = new Timer(1000 * 1, 1);
-			timer.addEventListener(TimerEvent.TIMER, this.handleTimer, false, 0, true);
-			timer.start();
+		override protected function destroy():void {
+			trace("*** destroy")
 		}
 		
-		public function test8():void {
-			//trace("8");
-			this.assert(1, true, "1 and true are the same");
+		public function test1():void {
+			trace("1");
+			
+			this.manualMode = true;
+			
+			this.text.addEventListener(MouseEvent.CLICK, this.handleTest1Click, false, 0, true);
+			
+			this.wait(.1, this.handleTest1NotClick);
+			
+			Tools.dispatchEventAt(this.stage, new Point(120, 110), new MouseEvent(MouseEvent.CLICK));
+			
+		}
+		private function handleTest1Click(e:MouseEvent):void {
+			this.pass("click handled");
+			
+			this.nextTest();
+		}
+		private function handleTest1NotClick():void {
+			this.fail("it's not clicked for too long!");
+			
+			this.nextTest();
 		}
 		
-		public function test9():void {
-			//trace("9");
-			this.assertNotStrict(1, true, "1 and true are not very much the same");
-		}
-		
-		public function test10():void {
-			//trace("10");
-			this.assertNot(1, 2, "1 and 2 are not the same");
-		}
 	}
 
 }
