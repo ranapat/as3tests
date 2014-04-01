@@ -76,17 +76,21 @@ package org.ranapat.examples {
 			
 			this.text.addEventListener(MouseEvent.CLICK, this.handleTest1Click, false, 0, true);
 			
-			this.wait(.1, this.handleTest1NotClick);
+			this.wait(.1, this.handleTest1NotClick, false);
 			
 			Tools.dispatchEventAt(this.stage, new Point(120, 110), new MouseEvent(MouseEvent.CLICK));
 			
 		}
 		private function handleTest1Click(e:MouseEvent):void {
+			trace("1.1");
+			
 			this.pass("click handled");
 			
-			this.nextTest();
+			//this.nextTest();
 		}
 		private function handleTest1NotClick():void {
+			trace("1.2");
+			
 			this.fail("it's not clicked for too long!");
 			
 			this.nextTest();
