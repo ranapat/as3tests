@@ -1,8 +1,7 @@
-package org.ranapat.examples {
+package org.ranapat.tests.examples {
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import org.ranapat.TestCase;
-	import org.ranapat.TestRunner;
+	import org.ranapat.tests.TestRunner;
 	
 	public class Main extends Sprite {
 		private var testRunner:TestRunner;

@@ -1,4 +1,4 @@
-package org.ranapat {
+package org.ranapat.tests {
 	
 	internal class TestCaseSuccess extends Error {
 		

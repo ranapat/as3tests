@@ -1,4 +1,4 @@
-package org.ranapat.examples {
+package org.ranapat.tests.examples {
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
@@ -8,8 +8,8 @@ package org.ranapat.examples {
 	import flash.geom.Point;
 	import flash.text.TextField;
 	import flash.utils.Timer;
-	import org.ranapat.TestCase;
-	import org.ranapat.Tools;
+	import org.ranapat.tests.TestCase;
+	import org.ranapat.tests.Tools;
 	
 	public class ExampleTest1 extends TestCase {
 		private var stage:Stage;

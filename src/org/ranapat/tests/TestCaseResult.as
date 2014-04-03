@@ -1,4 +1,4 @@
-package org.ranapat {
+package org.ranapat.tests {
 	
 	public class TestCaseResult {
 		private var _className:String;

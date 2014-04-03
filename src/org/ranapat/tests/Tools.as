@@ -1,15 +1,24 @@
-package org.ranapat {
+package org.ranapat.tests {
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.InteractiveObject;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
+	import flash.utils.getQualifiedClassName;
 	
 	public class Tools {
 		
 		public function Tools() {
 			//
+		}
+		
+		public static function getFullClassName(instance:Object):String {
+			return getQualifiedClassName(instance);
+		}
+		
+		public static function shortenClassName(name:String):String {
+			return name.substring(name.indexOf("::") + 2, name.length);
 		}
 		
 		public static function getObjectsAt(parent:DisplayObjectContainer, point:Point):Vector.<DisplayObject> {

@@ -1,4 +1,4 @@
-package org.ranapat {
+package org.ranapat.tests {
 	import flash.events.Event;
 	
 	internal class TestCompleteEvent extends Event {

@@ -1,4 +1,4 @@
-package org.ranapat {
+package org.ranapat.tests {
 	import flash.utils.Dictionary;
 	
 	public class TestRunner {

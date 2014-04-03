@@ -1,4 +1,4 @@
-package org.ranapat {
+package org.ranapat.tests {
 	
 	public class TestResultObject {
 		public var result:Error;

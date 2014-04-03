@@ -1,7 +1,8 @@
-package org.ranapat.examples {
+package org.ranapat.tests.examples {
+	import flash.errors.IllegalOperationError;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-	import org.ranapat.TestCase;
+	import org.ranapat.tests.TestCase;
 	
 	public class ExampleTest extends TestCase {
 		
@@ -40,10 +41,10 @@ package org.ranapat.examples {
 		
 		public function test4():void {
 			trace("4");
-			this.assertThrows(this.throwExcaption, "It shall throw exception");
+			this.assertThrows(this.throwExcaption, "It shall throw exception", UninitializedError);
 		}
 		private function throwExcaption():void {
-			throw new Error("Throw exception on purpose");
+			throw new IllegalOperationError("Throw exception on purpose");
 		}
 		
 		public function test5():void {

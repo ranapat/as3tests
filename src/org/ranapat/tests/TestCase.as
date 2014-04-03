@@ -1,4 +1,4 @@
-package org.ranapat {
+package org.ranapat.tests {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.TimerEvent;
@@ -74,15 +74,21 @@ package org.ranapat {
 			this.afterAssert();
 		}
 		
-		protected function assertThrows(callback:Function, message:String = ""):void {
+		protected function assertThrows(callback:Function, message:String = "", error:Class = null):void {
 			this.beforeAssert();
+			
+			error = error? error : Error;
 			
 			try {
 				callback.apply(this);
 				
 				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(message)));
-			} catch (e:Error) {
-				this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(e.message)));
+			} catch (e:*) {
+				if (e is error) {
+					this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseSuccess(e.message)));
+				} else {
+					this.dispatchEvent(new TestCompleteEvent(TestCompleteEvent.COMPLETE, new TestCaseFail(Tools.getFullClassName(e) + " :: " + e.message)));
+				}
 			}
 			
 			this.afterAssert();
@@ -293,7 +299,7 @@ package org.ranapat {
 		}
 		
 		private function handleWaiterComplete(e:TimerEvent):void {
-			if (this._waiterCallback) {
+			if (this._waiterCallback != null) {
 				this._waiterCallback.apply(this);
 				
 				this.clearWaiter();
